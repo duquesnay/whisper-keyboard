@@ -5,16 +5,27 @@ Offline voice dictation keyboard for iOS using WhisperKit (Whisper on CoreML/Neu
 ## Goal
 
 Replace Whispr Flow with a free, self-owned, offline custom keyboard that:
-- Runs Whisper locally on iPhone (A18 Neural Engine)
-- Auto-detects French and English
+- Streams transcription in real-time as user speaks
+- Auto-detects French and English (including mixed)
 - Works in any app without switching back to the host app
 - No subscription, no cloud dependency
 
 ## Architecture
 
-- **Container App** (WhisperKeyboard): Downloads models, shows setup instructions
-- **Keyboard Extension** (WhisperKeyboardExtension): Custom keyboard with mic button, runs WhisperKit for STT
-- **Shared App Group**: Models downloaded by the app are accessible by the extension
+WhisperKit cannot run inside the keyboard extension (~50MB memory limit). The container app does all heavy lifting.
+
+- **Container App** (WhisperKeyboard): Downloads models, runs WhisperKit, captures audio via AVAudioEngine, stays alive in background via Background Audio mode
+- **Keyboard Extension** (WhisperKeyboardExtension): UI only -- mic button, status display, text insertion via textDocumentProxy
+- **Shared/** : App Group constants, Darwin notification helpers, shared keys
+- **Communication**: Darwin Notifications (pings) + App Group UserDefaults (data)
+
+```
+Container App (background)     Keyboard Extension (foreground)
+├── AVAudioEngine             ├── Mic button UI
+├── WhisperKit (STT)          ├── Status display
+├── Background Audio mode     ├── Globe key (switch keyboard)
+└── Model management          └── textDocumentProxy.insertText()
+```
 
 ## Tech Stack
 
@@ -25,9 +36,11 @@ Replace Whispr Flow with a free, self-owned, offline custom keyboard that:
 
 ## Key Constraints
 
-- Keyboard extensions have limited memory (~50MB). large-v3-turbo may not fit; may need to use smaller models or stream from the app.
-- "Allow Full Access" required for microphone in keyboard extension.
-- Models stored in shared App Group container so both app and extension can access them.
+- Keyboard extensions have ~50MB memory limit -- WhisperKit runs in container app only
+- Container app must stay alive in background (Background Audio capability)
+- "Allow Full Access" required for microphone access via keyboard extension
+- Models stored in shared App Group container
+- Darwin notifications carry no payload -- read data from App Group UserDefaults after receiving
 
 ## Development
 
@@ -37,8 +50,22 @@ xcodegen generate
 
 # Open in Xcode
 open WhisperKeyboard.xcodeproj
+
+# Build for device (CLI)
+xcodebuild -project WhisperKeyboard.xcodeproj -scheme WhisperKeyboard \
+  -destination 'platform=iOS,name=iPhone majeur' \
+  -allowProvisioningUpdates build
+
+# Install on device
+xcrun devicectl device install app --device 79D4256F-37C7-5086-B0E8-30E17ED51AD0 \
+  ~/Library/Developer/Xcode/DerivedData/WhisperKeyboard-*/Build/Products/Debug-iphoneos/WhisperKeyboard.app
 ```
 
 ## Target Device
 
-iPhone 16 (A18, iOS 17+)
+iPhone 16 Plus (A18, iOS 17+)
+
+## Backlog
+
+GitHub Issues: https://github.com/duquesnay/whisper-keyboard/issues
+Milestone: v0.1 Daily Driver
