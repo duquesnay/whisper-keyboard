@@ -15,22 +15,76 @@ class DictationService: ObservableObject {
     private var silencePlayer: AVAudioPlayer?
     private var pollTimer: Timer?
 
+    private static let modelVariant = "openai_whisper-small"
+
     // MARK: - Model Management
 
     func downloadModel() async {
+        // Use App Group container so model survives app reinstalls
+        guard let modelDir = AppGroup.modelDirectoryURL else {
+            modelStatus = "Error: no App Group container"
+            return
+        }
+
+        // Check if model already exists locally
+        let localModelPath = modelDir.appendingPathComponent(Self.modelVariant).path
+        let modelExists = FileManager.default.fileExists(atPath: localModelPath)
+
+        if modelExists {
+            modelStatus = "Loading..."
+            do {
+                whisperKit = try await WhisperKit(
+                    WhisperKitConfig(
+                        model: Self.modelVariant,
+                        modelFolder: localModelPath,
+                        verbose: false,
+                        prewarm: true,
+                        load: true,
+                        download: false
+                    )
+                )
+                modelStatus = "Ready"
+                isModelReady = true
+                return
+            } catch {
+                modelStatus = "Redownloading..."
+            }
+        }
+
+        // Download model to App Group container
         modelStatus = "Downloading..."
         do {
+            try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
+
+            let folderURL = try await WhisperKit.download(
+                variant: Self.modelVariant,
+                from: "argmaxinc/whisperkit-coreml",
+                progressCallback: { progress in
+                    Task { @MainActor in
+                        self.modelStatus = "Downloading \(Int(progress.fractionCompleted * 100))%"
+                    }
+                }
+            )
+
+            // Copy downloaded model to App Group container
+            let destPath = modelDir.appendingPathComponent(Self.modelVariant)
+            if FileManager.default.fileExists(atPath: destPath.path) {
+                try FileManager.default.removeItem(at: destPath)
+            }
+            try FileManager.default.copyItem(at: folderURL, to: destPath)
+
             whisperKit = try await WhisperKit(
                 WhisperKitConfig(
-                    model: "openai_whisper-small",
+                    model: Self.modelVariant,
+                    modelFolder: destPath.path,
                     verbose: false,
                     prewarm: true,
-                    load: true
+                    load: true,
+                    download: false
                 )
             )
             modelStatus = "Ready"
             isModelReady = true
-            AppGroup.defaults.set(true, forKey: SharedKeys.modelReady)
         } catch {
             modelStatus = "Error: \(error.localizedDescription)"
         }
@@ -133,11 +187,11 @@ class DictationService: ObservableObject {
         do {
             let options = DecodingOptions(
                 task: .transcribe,
-                language: "fr",
                 temperature: 0.0,
                 usePrefillPrompt: true,
                 skipSpecialTokens: true,
-                noSpeechThreshold: 0.3
+                withoutTimestamps: true,
+                noSpeechThreshold: 0.6
             )
 
             let results = try await whisperKit.transcribe(
