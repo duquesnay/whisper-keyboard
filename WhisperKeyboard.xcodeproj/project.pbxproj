@@ -19,6 +19,7 @@
 		89D2B7BFE4889E6D4F6E7208 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265579B8E8D166692322EDDA /* AppGroup.swift */; };
 		C2082D3C703B1572C1357D08 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6822A6C542BDE3F63FA2C62B /* WhisperKit */; };
 		C2CB6CE8126F00934A06CB4B /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0F057465EAF0E0B9E3E252 /* KeyboardViewController.swift */; };
+		C5A0409726135F3072263AD7 /* KeyboardKit in Frameworks */ = {isa = PBXBuildFile; productRef = E8A11876D8C0FE9F59C046C7 /* KeyboardKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1798BB50E55155F8606063D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C5A0409726135F3072263AD7 /* KeyboardKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EF6F2C94447CCF024870BBA5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -132,6 +141,7 @@
 			buildConfigurationList = 3C65715C3809012A8684B55E /* Build configuration list for PBXNativeTarget "WhisperKeyboardExtension" */;
 			buildPhases = (
 				90CED8C0EFFBCD404F6AB90E /* Sources */,
+				1798BB50E55155F8606063D7 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -139,6 +149,7 @@
 			);
 			name = WhisperKeyboardExtension;
 			packageProductDependencies = (
+				E8A11876D8C0FE9F59C046C7 /* KeyboardKit */,
 			);
 			productName = WhisperKeyboardExtension;
 			productReference = 0ABDFBD0F5046C2F67FC01D0 /* WhisperKeyboardExtension.appex */;
@@ -176,9 +187,11 @@
 				TargetAttributes = {
 					0990D7E30796D5E3D7763A32 = {
 						DevelopmentTeam = ZG2N3GX4PM;
+						ProvisioningStyle = Automatic;
 					};
 					F50FD9A35B440E6F64F4B3E7 = {
 						DevelopmentTeam = ZG2N3GX4PM;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -192,6 +205,7 @@
 			mainGroup = 3F50312AA244A3C9AA26E8FA;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				185D56311CF905656245DCF7 /* XCRemoteSwiftPackageReference "KeyboardKit" */,
 				3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -245,6 +259,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Keyboard/WhisperKeyboardExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = ZG2N3GX4PM;
 				INFOPLIST_FILE = Keyboard/Info.plist;
@@ -264,6 +279,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Keyboard/WhisperKeyboardExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = ZG2N3GX4PM;
 				INFOPLIST_FILE = Keyboard/Info.plist;
@@ -348,6 +364,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/WhisperKeyboard.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = ZG2N3GX4PM;
 				INFOPLIST_FILE = App/Info.plist;
@@ -368,6 +385,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/WhisperKeyboard.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = ZG2N3GX4PM;
 				INFOPLIST_FILE = App/Info.plist;
@@ -471,6 +489,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		185D56311CF905656245DCF7 /* XCRemoteSwiftPackageReference "KeyboardKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/KeyboardKit/KeyboardKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
 		3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/argmaxinc/WhisperKit";
@@ -486,6 +512,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */;
 			productName = WhisperKit;
+		};
+		E8A11876D8C0FE9F59C046C7 /* KeyboardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 185D56311CF905656245DCF7 /* XCRemoteSwiftPackageReference "KeyboardKit" */;
+			productName = KeyboardKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
