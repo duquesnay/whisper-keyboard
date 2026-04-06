@@ -1,0 +1,471 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		19036D21AD44A15CB7C2163C /* WhisperKeyboardExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0ABDFBD0F5046C2F67FC01D0 /* WhisperKeyboardExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5D595EC0694E5265F96B3B16 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4874D38F27B90957DE9540 /* ContentView.swift */; };
+		72F8827B8559E1886C6D691E /* WhisperKeyboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0045B2F11A4976F0D50F9DCB /* WhisperKeyboardApp.swift */; };
+		C2082D3C703B1572C1357D08 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 6822A6C542BDE3F63FA2C62B /* WhisperKit */; };
+		C2CB6CE8126F00934A06CB4B /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0F057465EAF0E0B9E3E252 /* KeyboardViewController.swift */; };
+		C5A0409726135F3072263AD7 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = CC94C1368A8E3A0DA33BC888 /* WhisperKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F207A51F29B433354E517C9E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 14E8EE7B589A6A690F2C97FA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0990D7E30796D5E3D7763A32;
+			remoteInfo = WhisperKeyboardExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		842DEE1D3E7F374C0F134BA7 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				19036D21AD44A15CB7C2163C /* WhisperKeyboardExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0045B2F11A4976F0D50F9DCB /* WhisperKeyboardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperKeyboardApp.swift; sourceTree = "<group>"; };
+		0ABDFBD0F5046C2F67FC01D0 /* WhisperKeyboardExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WhisperKeyboardExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		279490EC0308589A666E523D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3B4874D38F27B90957DE9540 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		CE0F057465EAF0E0B9E3E252 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
+		D6A72ED9DDADCFC059F2D80B /* WhisperKeyboard.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WhisperKeyboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F060E87119A3D2DBE0E635FC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1798BB50E55155F8606063D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C5A0409726135F3072263AD7 /* WhisperKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EF6F2C94447CCF024870BBA5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2082D3C703B1572C1357D08 /* WhisperKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2A459E00F9F843EF9768A091 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D6A72ED9DDADCFC059F2D80B /* WhisperKeyboard.app */,
+				0ABDFBD0F5046C2F67FC01D0 /* WhisperKeyboardExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3F50312AA244A3C9AA26E8FA = {
+			isa = PBXGroup;
+			children = (
+				A194CDD39E8339FFD21E571D /* App */,
+				DD4E0BE4AC4034002BC70130 /* Keyboard */,
+				2A459E00F9F843EF9768A091 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A194CDD39E8339FFD21E571D /* App */ = {
+			isa = PBXGroup;
+			children = (
+				3B4874D38F27B90957DE9540 /* ContentView.swift */,
+				279490EC0308589A666E523D /* Info.plist */,
+				0045B2F11A4976F0D50F9DCB /* WhisperKeyboardApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		DD4E0BE4AC4034002BC70130 /* Keyboard */ = {
+			isa = PBXGroup;
+			children = (
+				F060E87119A3D2DBE0E635FC /* Info.plist */,
+				CE0F057465EAF0E0B9E3E252 /* KeyboardViewController.swift */,
+			);
+			path = Keyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0990D7E30796D5E3D7763A32 /* WhisperKeyboardExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C65715C3809012A8684B55E /* Build configuration list for PBXNativeTarget "WhisperKeyboardExtension" */;
+			buildPhases = (
+				90CED8C0EFFBCD404F6AB90E /* Sources */,
+				1798BB50E55155F8606063D7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WhisperKeyboardExtension;
+			packageProductDependencies = (
+				CC94C1368A8E3A0DA33BC888 /* WhisperKit */,
+			);
+			productName = WhisperKeyboardExtension;
+			productReference = 0ABDFBD0F5046C2F67FC01D0 /* WhisperKeyboardExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		F50FD9A35B440E6F64F4B3E7 /* WhisperKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EBF73673DB5F01E252D51750 /* Build configuration list for PBXNativeTarget "WhisperKeyboard" */;
+			buildPhases = (
+				2B59176F4EF8A62D1F5DA230 /* Sources */,
+				EF6F2C94447CCF024870BBA5 /* Frameworks */,
+				842DEE1D3E7F374C0F134BA7 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CDC61BCD4F3D95124A7DDF39 /* PBXTargetDependency */,
+			);
+			name = WhisperKeyboard;
+			packageProductDependencies = (
+				6822A6C542BDE3F63FA2C62B /* WhisperKit */,
+			);
+			productName = WhisperKeyboard;
+			productReference = D6A72ED9DDADCFC059F2D80B /* WhisperKeyboard.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		14E8EE7B589A6A690F2C97FA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					0990D7E30796D5E3D7763A32 = {
+						DevelopmentTeam = "";
+					};
+					F50FD9A35B440E6F64F4B3E7 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = 79CF43F2C9DC46FA6D289545 /* Build configuration list for PBXProject "WhisperKeyboard" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 3F50312AA244A3C9AA26E8FA;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2A459E00F9F843EF9768A091 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F50FD9A35B440E6F64F4B3E7 /* WhisperKeyboard */,
+				0990D7E30796D5E3D7763A32 /* WhisperKeyboardExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2B59176F4EF8A62D1F5DA230 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5D595EC0694E5265F96B3B16 /* ContentView.swift in Sources */,
+				72F8827B8559E1886C6D691E /* WhisperKeyboardApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		90CED8C0EFFBCD404F6AB90E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2CB6CE8126F00934A06CB4B /* KeyboardViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CDC61BCD4F3D95124A7DDF39 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0990D7E30796D5E3D7763A32 /* WhisperKeyboardExtension */;
+			targetProxy = F207A51F29B433354E517C9E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2ABA3C0DFF7FBD5691DC983B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = Keyboard/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guillaumeduquesnay.whisper-keyboard.keyboard";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		438EE738C7521BB3C192BCEF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = Keyboard/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guillaumeduquesnay.whisper-keyboard.keyboard";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		803F81EA398EA6CB17FF44D2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A4DC1A3DB4E071819D504DEC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guillaumeduquesnay.whisper-keyboard";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		C830225BC54D5AC9E61FCAF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guillaumeduquesnay.whisper-keyboard";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F013A1974003ED4B4DFC2837 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3C65715C3809012A8684B55E /* Build configuration list for PBXNativeTarget "WhisperKeyboardExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2ABA3C0DFF7FBD5691DC983B /* Debug */,
+				438EE738C7521BB3C192BCEF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		79CF43F2C9DC46FA6D289545 /* Build configuration list for PBXProject "WhisperKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				803F81EA398EA6CB17FF44D2 /* Debug */,
+				F013A1974003ED4B4DFC2837 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EBF73673DB5F01E252D51750 /* Build configuration list for PBXNativeTarget "WhisperKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C830225BC54D5AC9E61FCAF2 /* Debug */,
+				A4DC1A3DB4E071819D504DEC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6822A6C542BDE3F63FA2C62B /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+		CC94C1368A8E3A0DA33BC888 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D4877F237D1D3EECDAAE5EE /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 14E8EE7B589A6A690F2C97FA /* Project object */;
+}
