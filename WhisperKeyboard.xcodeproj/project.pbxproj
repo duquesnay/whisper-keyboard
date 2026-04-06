@@ -12,6 +12,7 @@
 		520E48016D7C8BB99EF827B5 /* DarwinNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677F7F698072FD7939267D71 /* DarwinNotifications.swift */; };
 		5D595EC0694E5265F96B3B16 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4874D38F27B90957DE9540 /* ContentView.swift */; };
 		5EB058F5F4D92AD15E2F2A99 /* SharedKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F85692FAA63A96789A55A7 /* SharedKeys.swift */; };
+		6C2F285BFD43091186BC502C /* KeyboardKit in Frameworks */ = {isa = PBXBuildFile; productRef = F5AB76EA14B4BB194334F3D2 /* KeyboardKit */; };
 		6F113907085B0920B45CD357 /* DarwinNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 677F7F698072FD7939267D71 /* DarwinNotifications.swift */; };
 		72F8827B8559E1886C6D691E /* WhisperKeyboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0045B2F11A4976F0D50F9DCB /* WhisperKeyboardApp.swift */; };
 		7572325933FA6A7035C1154A /* SharedKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F85692FAA63A96789A55A7 /* SharedKeys.swift */; };
@@ -76,6 +77,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C2082D3C703B1572C1357D08 /* WhisperKit in Frameworks */,
+				6C2F285BFD43091186BC502C /* KeyboardKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -171,6 +173,7 @@
 			name = WhisperKeyboard;
 			packageProductDependencies = (
 				6822A6C542BDE3F63FA2C62B /* WhisperKit */,
+				F5AB76EA14B4BB194334F3D2 /* KeyboardKit */,
 			);
 			productName = WhisperKeyboard;
 			productReference = D6A72ED9DDADCFC059F2D80B /* WhisperKeyboard.app */;
@@ -514,6 +517,11 @@
 			productName = WhisperKit;
 		};
 		E8A11876D8C0FE9F59C046C7 /* KeyboardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 185D56311CF905656245DCF7 /* XCRemoteSwiftPackageReference "KeyboardKit" */;
+			productName = KeyboardKit;
+		};
+		F5AB76EA14B4BB194334F3D2 /* KeyboardKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 185D56311CF905656245DCF7 /* XCRemoteSwiftPackageReference "KeyboardKit" */;
 			productName = KeyboardKit;

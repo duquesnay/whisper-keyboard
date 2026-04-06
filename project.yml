@@ -36,6 +36,7 @@ targets:
     dependencies:
       - target: WhisperKeyboardExtension
       - package: WhisperKit
+      - package: KeyboardKit
 
   WhisperKeyboardExtension:
     type: app-extension
