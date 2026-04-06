@@ -6,11 +6,14 @@ class DictationService: ObservableObject {
     @Published var status: DictationStatus = .idle
     @Published var modelStatus: String = "Not downloaded"
     @Published var isModelReady = false
+    @Published var notificationsReceived = 0
 
     private var whisperKit: WhisperKit?
     private var audioEngine: AVAudioEngine?
     private var audioSamples: [Float] = []
     private let targetSampleRate: Double = 16000
+    private var silencePlayer: AVAudioPlayer?
+    private var pollTimer: Timer?
 
     // MARK: - Model Management
 
@@ -33,6 +36,51 @@ class DictationService: ObservableObject {
         }
     }
 
+    // MARK: - Background Audio
+
+    // Activates the audio session with playAndRecord category so the OS keeps the
+    // container app alive in the background. Must be called before the user leaves
+    // the app so the session persists when the app is backgrounded.
+    func setupBackgroundAudio() {
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(
+                .playAndRecord,
+                mode: .default,
+                options: [.defaultToSpeaker, .allowBluetoothHFP, .mixWithOthers]
+            )
+            try session.setActive(true)
+            startSilenceLoop()
+        } catch {
+            print("[DictationService] Failed to configure background audio session: \(error)")
+        }
+    }
+
+    // Play a silent audio loop to keep the app process alive in background.
+    // iOS kills background apps that have an audio session but no active audio stream.
+    private func startSilenceLoop() {
+        let sampleRate: Double = 16000
+        let duration: Double = 1.0
+        let frameCount = Int(sampleRate * duration)
+        let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: sampleRate, channels: 1, interleaved: false)!
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(frameCount)) else { return }
+        buffer.frameLength = AVAudioFrameCount(frameCount)
+        // Buffer is already zeroed (silence)
+
+        do {
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("silence.wav")
+            let file = try AVAudioFile(forWriting: tempURL, settings: format.settings)
+            try file.write(from: buffer)
+
+            silencePlayer = try AVAudioPlayer(contentsOf: tempURL)
+            silencePlayer?.numberOfLoops = -1 // infinite loop
+            silencePlayer?.volume = 0.0
+            silencePlayer?.play()
+        } catch {
+            print("[DictationService] Failed to start silence loop: \(error)")
+        }
+    }
+
     // MARK: - Recording
 
     func startRecording() {
@@ -43,10 +91,8 @@ class DictationService: ObservableObject {
         writeStatus(.recording)
 
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.record, mode: .default)
-            try session.setActive(true)
-
+            // Audio session is already active (set up at launch via setupBackgroundAudio).
+            // We only need to wire up the engine and tap here.
             audioEngine = AVAudioEngine()
             guard let audioEngine else { return }
 
@@ -153,14 +199,49 @@ class DictationService: ObservableObject {
     }
 
     func listenForKeyboardCommands() {
+        // Darwin notifications as primary (work when app is foreground)
         DarwinNotificationCenter.addObserver(for: DarwinNotificationName.startRecording) { [weak self] in
             Task { @MainActor in
+                self?.notificationsReceived += 1
                 self?.startRecording()
             }
         }
         DarwinNotificationCenter.addObserver(for: DarwinNotificationName.stopRecording) { [weak self] in
             Task { @MainActor in
+                self?.notificationsReceived += 1
                 self?.stopRecording()
+            }
+        }
+
+        // Polling as fallback (works when app is background with active audio)
+        startPolling()
+    }
+
+    private func startPolling() {
+        pollTimer?.invalidate()
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.checkForKeyboardCommands()
+            }
+        }
+    }
+
+    private func checkForKeyboardCommands() {
+        let defaults = AppGroup.defaults
+
+        if defaults.bool(forKey: SharedKeys.startRequested) {
+            defaults.set(false, forKey: SharedKeys.startRequested)
+            notificationsReceived += 1
+            if status != .recording {
+                startRecording()
+            }
+        }
+
+        if defaults.bool(forKey: SharedKeys.stopRequested) {
+            defaults.set(false, forKey: SharedKeys.stopRequested)
+            notificationsReceived += 1
+            if status == .recording {
+                stopRecording()
             }
         }
     }

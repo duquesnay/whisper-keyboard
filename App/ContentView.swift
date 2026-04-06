@@ -55,6 +55,15 @@ struct ContentView: View {
                     }
                 }
 
+                Section("Debug") {
+                    HStack {
+                        Text("Notifications received")
+                        Spacer()
+                        Text("\(dictation.notificationsReceived)")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Section("Keyboard Setup") {
                     Text("1. Go to Settings > General > Keyboard")
                     Text("2. Tap 'Keyboards' > 'Add New Keyboard'")
@@ -72,6 +81,9 @@ struct ContentView: View {
             .navigationTitle("WhisperKeyboard")
         }
         .onAppear {
+            // Set up background audio session before user leaves the app so it
+            // persists in background and keeps the process alive for Darwin notifications.
+            dictation.setupBackgroundAudio()
             dictation.listenForKeyboardCommands()
         }
     }

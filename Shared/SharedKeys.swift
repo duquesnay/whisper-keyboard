@@ -8,6 +8,7 @@ public enum SharedKeys {
     public static let modelReady = "wk.modelReady"
     public static let waveformEnergy = "wk.waveformEnergy"
     public static let stopRequested = "wk.stopRequested"
+    public static let startRequested = "wk.startRequested"
     public static let language = "wk.language"
 }
 
