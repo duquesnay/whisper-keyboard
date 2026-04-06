@@ -13,6 +13,14 @@ class KeyboardViewController: KeyboardInputViewController {
     private var pollTimer: Timer?
     private var lastSeenDate: TimeInterval?
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Restart polling every time the keyboard appears (extension may have been suspended)
+        startPolling()
+        // Immediately check for pending transcription
+        checkForTranscription()
+    }
+
     override func viewWillSetupKeyboardView() {
         setupKeyboardView { [weak self] controller in
             KeyboardView(
