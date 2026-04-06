@@ -127,9 +127,14 @@ class KeyboardViewController: KeyboardInputViewController {
             }
         }
 
-        // Check for completed transcription
-        guard let text = defaults.string(forKey: SharedKeys.lastTranscription),
-              !text.isEmpty else { return }
+        // Check for completed transcription (try lastTranscription first, partialTranscription as fallback)
+        let rawStatus = defaults.string(forKey: SharedKeys.dictationStatus) ?? ""
+        let text: String? = {
+            if let t = defaults.string(forKey: SharedKeys.lastTranscription), !t.isEmpty { return t }
+            if rawStatus == "ready", let t = defaults.string(forKey: SharedKeys.partialTranscription), !t.isEmpty { return t }
+            return nil
+        }()
+        guard let text, !text.isEmpty else { return }
 
         let timestamp = defaults.double(forKey: SharedKeys.lastTranscriptionTimestamp)
         if let lastSeen = lastSeenDate, timestamp <= lastSeen { return }

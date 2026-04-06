@@ -97,20 +97,30 @@ struct DictationView: View {
             || !dictation.currentText.isEmpty
 
         if hasAny {
-            Group {
-                (
-                    Text(dictation.confirmedText).foregroundStyle(.primary)
-                    + Text(dictation.confirmedText.isEmpty || dictation.unconfirmedText.isEmpty ? "" : " ")
-                    + Text(dictation.unconfirmedText).foregroundStyle(.secondary)
-                    + Text(dictation.unconfirmedText.isEmpty || dictation.currentText.isEmpty ? "" : " ")
-                    + Text(dictation.currentText).foregroundStyle(.tertiary)
-                )
-                .font(.body)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    (
+                        Text(dictation.confirmedText).foregroundStyle(.primary)
+                        + Text(dictation.confirmedText.isEmpty || dictation.unconfirmedText.isEmpty ? "" : " ")
+                        + Text(dictation.unconfirmedText).foregroundStyle(.secondary)
+                        + Text(dictation.unconfirmedText.isEmpty || dictation.currentText.isEmpty ? "" : " ")
+                        + Text(dictation.currentText).foregroundStyle(.tertiary)
+                    )
+                    .font(.body)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .id("streamingText")
+                }
+                .padding()
+                .background(Color(.secondarySystemBackground))
+                .cornerRadius(12)
+                .padding(.horizontal)
+                .frame(maxHeight: 200)
+                .onChange(of: dictation.currentText) { _, _ in
+                    withAnimation {
+                        proxy.scrollTo("streamingText", anchor: .bottom)
+                    }
+                }
             }
-            .padding()
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
-            .padding(.horizontal)
         }
     }
 

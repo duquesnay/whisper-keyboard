@@ -26,61 +26,19 @@ class DictationService: ObservableObject {
             return
         }
 
+        // WhisperKit handles download + caching when given downloadBase.
+        // If model already exists at that path, it loads from cache without re-downloading.
+        modelStatus = "Loading..."
         do {
             try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-        } catch {
-            modelStatus = "Error: \(error.localizedDescription)"
-            return
-        }
-
-        // Check if model already downloaded in App Group
-        let expectedPath = modelDir.appendingPathComponent("huggingface/models/argmaxinc/whisperkit-coreml")
-        let modelGlob = try? FileManager.default.contentsOfDirectory(at: expectedPath, includingPropertiesForKeys: nil)
-            .filter { $0.lastPathComponent.contains(Self.modelVariant) }
-
-        if let modelFolder = modelGlob?.first, FileManager.default.fileExists(atPath: modelFolder.path) {
-            modelStatus = "Loading..."
-            do {
-                whisperKit = try await WhisperKit(
-                    WhisperKitConfig(
-                        model: Self.modelVariant,
-                        modelFolder: modelFolder.path,
-                        verbose: false,
-                        prewarm: true,
-                        load: true,
-                        download: false
-                    )
-                )
-                modelStatus = "Ready"
-                isModelReady = true
-                return
-            } catch {
-                modelStatus = "Redownloading..."
-            }
-        }
-
-        // Download directly into App Group container
-        modelStatus = "Downloading..."
-        do {
-            let folderURL = try await WhisperKit.download(
-                variant: Self.modelVariant,
-                downloadBase: modelDir,
-                from: "argmaxinc/whisperkit-coreml",
-                progressCallback: { progress in
-                    Task { @MainActor in
-                        self.modelStatus = "Downloading \(Int(progress.fractionCompleted * 100))%"
-                    }
-                }
-            )
 
             whisperKit = try await WhisperKit(
                 WhisperKitConfig(
                     model: Self.modelVariant,
-                    modelFolder: folderURL.path,
-                    verbose: false,
+                    downloadBase: modelDir,
+                    verbose: true,
                     prewarm: true,
-                    load: true,
-                    download: false
+                    load: true
                 )
             )
             modelStatus = "Ready"
@@ -222,20 +180,25 @@ class DictationService: ObservableObject {
     }
 
     func stopRecording() {
-        // Capture text snapshot before clearing state
-        let finalText = [confirmedText, unconfirmedText, currentText]
+        // Capture text from published properties
+        var finalText = [confirmedText, unconfirmedText, currentText]
             .filter { !$0.isEmpty }
             .joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Stop the actor (must be called from an async context)
+        // Fallback: use partialTranscription if published properties were already cleared
+        if finalText.isEmpty, let partial = AppGroup.defaults.string(forKey: SharedKeys.partialTranscription) {
+            finalText = partial.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        // Stop the actor
         let transcriber = streamTranscriber
         streamTranscriber = nil
         Task {
             await transcriber?.stopStreamTranscription()
         }
 
-        // Publish transcription result and signal keyboard extension
+        // Write final result for keyboard extension to pick up
         AppGroup.defaults.set(finalText, forKey: SharedKeys.lastTranscription)
         AppGroup.defaults.set(Date().timeIntervalSince1970, forKey: SharedKeys.lastTranscriptionTimestamp)
         AppGroup.defaults.removeObject(forKey: SharedKeys.partialTranscription)
