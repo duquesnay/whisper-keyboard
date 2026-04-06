@@ -18,12 +18,12 @@ class KeyboardViewController: KeyboardInputViewController {
     // MARK: - KeyboardKit Setup
 
     override func viewWillSetupKeyboardView() {
-        // Per KeyboardKit docs: do NOT call super here
         setupKeyboardView { [weak self] controller in
             WhisperKeyboardView(
                 dictationState: self?.dictationState ?? DictationState(),
                 viewController: self,
-                services: controller.services
+                services: controller.services,
+                state: controller.state
             )
         }
 
@@ -106,36 +106,36 @@ struct WhisperKeyboardView: View {
     @ObservedObject var dictationState: DictationState
     weak var viewController: KeyboardViewController?
     var services: Keyboard.Services
+    var state: Keyboard.State
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("WHISPER")
-                    .font(.caption.bold())
-                    .foregroundStyle(.orange)
-                Spacer()
-                Button {
-                    viewController?.toggleDictation()
-                } label: {
-                    Image(systemName: dictationState.isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                        .font(.system(size: 32))
-                        .foregroundStyle(dictationState.isRecording ? .red : .blue)
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color.yellow.opacity(0.3))
+        KeyboardView(
+            services: services,
+            buttonContent: { $0.view },
+            buttonView: { $0.view },
+            collapsedView: { $0.view },
+            emojiKeyboard: { $0.view },
+            toolbar: { _ in
+                HStack(spacing: 12) {
+                    Text(dictationState.statusText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(1)
 
-            KeyboardView(
-                services: services,
-                buttonContent: { $0.view },
-                buttonView: { $0.view },
-                collapsedView: { $0.view },
-                emojiKeyboard: { $0.view },
-                toolbar: { _ in EmptyView() }
-            )
-        }
+                    Button {
+                        viewController?.toggleDictation()
+                    } label: {
+                        Image(systemName: dictationState.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundStyle(dictationState.isRecording ? Color.red : Color.blue)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+            }
+        )
     }
 }
 
