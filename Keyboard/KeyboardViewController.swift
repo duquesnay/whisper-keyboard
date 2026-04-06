@@ -1,17 +1,15 @@
 import UIKit
-import WhisperKit
 
 class KeyboardViewController: UIInputViewController {
 
-    private var whisperKit: WhisperKit?
-    private var isRecording = false
     private var micButton: UIButton!
     private var statusLabel: UILabel!
+    private var isRecording = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        loadModel()
+        listenForTranscription()
     }
 
     // MARK: - UI
@@ -42,7 +40,7 @@ class KeyboardViewController: UIInputViewController {
         topRow.addArrangedSubview(globeButton)
 
         statusLabel = UILabel()
-        statusLabel.text = "Loading model..."
+        statusLabel.text = "Tap mic to dictate"
         statusLabel.font = .systemFont(ofSize: 12)
         statusLabel.textColor = .secondaryLabel
         topRow.addArrangedSubview(statusLabel)
@@ -55,56 +53,80 @@ class KeyboardViewController: UIInputViewController {
         micButton.setPreferredSymbolConfiguration(.init(pointSize: 44), forImageIn: .normal)
         micButton.tintColor = .systemBlue
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
-        micButton.isEnabled = false
         stackView.addArrangedSubview(micButton)
     }
 
-    // MARK: - WhisperKit
-
-    private func loadModel() {
-        Task {
-            do {
-                whisperKit = try await WhisperKit(
-                    model: "large-v3-turbo",
-                    verbose: false
-                )
-                await MainActor.run {
-                    statusLabel.text = "Ready -- tap mic to dictate"
-                    micButton.isEnabled = true
-                }
-            } catch {
-                await MainActor.run {
-                    statusLabel.text = "Model error: \(error.localizedDescription)"
-                }
-            }
-        }
-    }
+    // MARK: - Dictation Control (via Darwin notifications to container app)
 
     @objc private func micTapped() {
         if isRecording {
-            stopRecording()
+            stopDictation()
         } else {
-            startRecording()
+            startDictation()
         }
     }
 
-    private func startRecording() {
-        guard whisperKit != nil else { return }
+    private func startDictation() {
         isRecording = true
         micButton.tintColor = .systemRed
         statusLabel.text = "Listening..."
 
-        // TODO: Start audio capture and stream to WhisperKit
-        // WhisperKit supports streaming transcription
+        AppGroup.defaults.set(false, forKey: SharedKeys.stopRequested)
+        DarwinNotificationCenter.post(DarwinNotificationName.startRecording)
     }
 
-    private func stopRecording() {
+    private func stopDictation() {
         isRecording = false
         micButton.tintColor = .systemBlue
         statusLabel.text = "Transcribing..."
 
-        // TODO: Stop recording, run transcription, insert text
-        // self.textDocumentProxy.insertText(transcribedText)
-        // statusLabel.text = "Ready"
+        AppGroup.defaults.set(true, forKey: SharedKeys.stopRequested)
+        DarwinNotificationCenter.post(DarwinNotificationName.stopRecording)
+    }
+
+    // MARK: - Receive Transcription
+
+    private func listenForTranscription() {
+        DarwinNotificationCenter.addObserver(for: DarwinNotificationName.transcriptionReady) { [weak self] in
+            DispatchQueue.main.async {
+                self?.handleTranscriptionReady()
+            }
+        }
+
+        DarwinNotificationCenter.addObserver(for: DarwinNotificationName.statusChanged) { [weak self] in
+            DispatchQueue.main.async {
+                self?.handleStatusChanged()
+            }
+        }
+    }
+
+    private func handleTranscriptionReady() {
+        guard let text = AppGroup.defaults.string(forKey: SharedKeys.lastTranscription), !text.isEmpty else {
+            statusLabel.text = "No transcription"
+            return
+        }
+
+        textDocumentProxy.insertText(text)
+        statusLabel.text = "Tap mic to dictate"
+        isRecording = false
+        micButton.tintColor = .systemBlue
+    }
+
+    private func handleStatusChanged() {
+        guard let rawStatus = AppGroup.defaults.string(forKey: SharedKeys.dictationStatus),
+              let dictationStatus = DictationStatus(rawValue: rawStatus) else { return }
+
+        switch dictationStatus {
+        case .recording:
+            statusLabel.text = "Listening..."
+        case .transcribing:
+            statusLabel.text = "Transcribing..."
+        case .error:
+            statusLabel.text = "Error -- try again"
+            isRecording = false
+            micButton.tintColor = .systemBlue
+        case .idle, .ready:
+            break
+        }
     }
 }

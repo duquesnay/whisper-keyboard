@@ -16,13 +16,19 @@ targets:
     platform: iOS
     sources:
       - App
+      - Shared
     settings:
       base:
         INFOPLIST_FILE: App/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.guillaumeduquesnay.whisper-keyboard
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: 1
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: ZG2N3GX4PM
+    entitlements:
+      path: App/WhisperKeyboard.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.guillaumeduquesnay.whisper-keyboard
     dependencies:
       - target: WhisperKeyboardExtension
       - package: WhisperKit
@@ -32,12 +38,16 @@ targets:
     platform: iOS
     sources:
       - Keyboard
+      - Shared
     settings:
       base:
         INFOPLIST_FILE: Keyboard/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.guillaumeduquesnay.whisper-keyboard.keyboard
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: 1
-        DEVELOPMENT_TEAM: ""
-    dependencies:
-      - package: WhisperKit
+        DEVELOPMENT_TEAM: ZG2N3GX4PM
+    entitlements:
+      path: Keyboard/WhisperKeyboardExtension.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.guillaumeduquesnay.whisper-keyboard
