@@ -1,5 +1,6 @@
 import KeyboardKit
 import SwiftUI
+import UIKit
 
 final class DictationState: ObservableObject {
     @Published var isRecording = false
@@ -9,6 +10,8 @@ final class DictationState: ObservableObject {
 class KeyboardViewController: KeyboardInputViewController {
 
     let dictationState = DictationState()
+    private var pollTimer: Timer?
+    private var lastSeenDate: TimeInterval?
 
     override func viewWillSetupKeyboardView() {
         setupKeyboardView { [weak self] controller in
@@ -26,7 +29,7 @@ class KeyboardViewController: KeyboardInputViewController {
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button {
-                            self?.toggleDictation()
+                            self?.micTapped()
                         } label: {
                             Image(systemName: self?.dictationState.isRecording == true ? "stop.circle.fill" : "mic.circle.fill")
                                 .font(.system(size: 28))
@@ -40,62 +43,98 @@ class KeyboardViewController: KeyboardInputViewController {
             )
         }
 
-        listenForTranscription()
+        startPolling()
     }
 
-    // MARK: - Dictation control
+    // MARK: - Mic action
 
-    func toggleDictation() {
-        if dictationState.isRecording {
-            dictationState.isRecording = false
-            dictationState.statusText = "Transcribing..."
-            AppGroup.defaults.set(true, forKey: SharedKeys.stopRequested)
-            AppGroup.defaults.set(false, forKey: SharedKeys.startRequested)
-            DarwinNotificationCenter.post(DarwinNotificationName.stopRecording)
-        } else {
-            dictationState.isRecording = true
-            dictationState.statusText = "Listening..."
-            AppGroup.defaults.set(true, forKey: SharedKeys.startRequested)
-            AppGroup.defaults.set(false, forKey: SharedKeys.stopRequested)
-            DarwinNotificationCenter.post(DarwinNotificationName.startRecording)
+    private func micTapped() {
+        // Clear previous result
+        AppGroup.defaults.removeObject(forKey: SharedKeys.lastTranscription)
+        AppGroup.defaults.removeObject(forKey: SharedKeys.lastTranscriptionTimestamp)
+
+        dictationState.isRecording = true
+        dictationState.statusText = "Opening app..."
+
+        // Open container app via deep link
+        openContainerApp()
+    }
+
+    private func openContainerApp() {
+        guard let url = URL(string: "whisperkey://dictate") else { return }
+
+        // Walk the responder chain to find UIApplication and open the URL
+        var responder: UIResponder? = self
+        while let next = responder?.next {
+            if let application = next as? UIApplication {
+                application.open(url, options: [:], completionHandler: nil)
+                return
+            }
+            responder = next
+        }
+
+        // Fallback: selector-based approach
+        let selector = NSSelectorFromString("openURL:")
+        responder = self
+        while let next = responder?.next {
+            if next.responds(to: selector) {
+                next.perform(selector, with: url)
+                return
+            }
+            responder = next
         }
     }
 
-    // MARK: - Receive Transcription
+    // MARK: - Polling for results
 
-    private func listenForTranscription() {
-        DarwinNotificationCenter.addObserver(for: DarwinNotificationName.transcriptionReady) { [weak self] in
-            DispatchQueue.main.async { self?.handleTranscriptionReady() }
-        }
-        DarwinNotificationCenter.addObserver(for: DarwinNotificationName.statusChanged) { [weak self] in
-            DispatchQueue.main.async { self?.handleStatusChanged() }
+    private func startPolling() {
+        pollTimer?.invalidate()
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+            self?.checkForTranscription()
         }
     }
 
-    private func handleTranscriptionReady() {
-        guard let text = AppGroup.defaults.string(forKey: SharedKeys.lastTranscription), !text.isEmpty else {
-            dictationState.isRecording = false
-            dictationState.statusText = "Tap mic to dictate"
-            return
+    private func checkForTranscription() {
+        let defaults = AppGroup.defaults
+
+        // Check dictation status for UI updates
+        if let rawStatus = defaults.string(forKey: SharedKeys.dictationStatus) {
+            DispatchQueue.main.async { [weak self] in
+                switch rawStatus {
+                case "recording":
+                    self?.dictationState.isRecording = true
+                    self?.dictationState.statusText = "Listening..."
+                case "transcribing":
+                    self?.dictationState.isRecording = false
+                    self?.dictationState.statusText = "Transcribing..."
+                default:
+                    break
+                }
+            }
         }
-        textDocumentProxy.insertText(text)
-        dictationState.isRecording = false
-        dictationState.statusText = "Tap mic to dictate"
+
+        // Check for completed transcription
+        guard let text = defaults.string(forKey: SharedKeys.lastTranscription),
+              !text.isEmpty else { return }
+
+        let timestamp = defaults.double(forKey: SharedKeys.lastTranscriptionTimestamp)
+        if let lastSeen = lastSeenDate, timestamp <= lastSeen { return }
+
+        // New transcription available
+        lastSeenDate = timestamp
+        DispatchQueue.main.async { [weak self] in
+            self?.textDocumentProxy.insertText(text)
+            self?.dictationState.isRecording = false
+            self?.dictationState.statusText = "Tap mic to dictate"
+        }
+
+        // Clean up
+        defaults.removeObject(forKey: SharedKeys.lastTranscription)
+        defaults.removeObject(forKey: SharedKeys.lastTranscriptionTimestamp)
+        defaults.set(DictationStatus.idle.rawValue, forKey: SharedKeys.dictationStatus)
     }
 
-    private func handleStatusChanged() {
-        guard let rawStatus = AppGroup.defaults.string(forKey: SharedKeys.dictationStatus),
-              let status = DictationStatus(rawValue: rawStatus) else { return }
-        switch status {
-        case .recording:
-            dictationState.statusText = "Listening..."
-        case .transcribing:
-            dictationState.statusText = "Transcribing..."
-        case .error:
-            dictationState.isRecording = false
-            dictationState.statusText = "Error -- try again"
-        case .idle, .ready:
-            break
-        }
+    deinit {
+        pollTimer?.invalidate()
     }
 }

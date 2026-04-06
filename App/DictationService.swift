@@ -133,9 +133,11 @@ class DictationService: ObservableObject {
         do {
             let options = DecodingOptions(
                 task: .transcribe,
+                language: "fr",
                 temperature: 0.0,
                 usePrefillPrompt: true,
-                skipSpecialTokens: true
+                skipSpecialTokens: true,
+                noSpeechThreshold: 0.3
             )
 
             let results = try await whisperKit.transcribe(

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var dictation = DictationService()
+    @ObservedObject var dictation: DictationService
 
     var body: some View {
         NavigationStack {
@@ -90,5 +90,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(dictation: DictationService())
 }
