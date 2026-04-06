@@ -7,11 +7,12 @@ class DictationService: ObservableObject {
     @Published var modelStatus: String = "Not downloaded"
     @Published var isModelReady = false
     @Published var notificationsReceived = 0
+    @Published var confirmedText: String = ""
+    @Published var unconfirmedText: String = ""
+    @Published var currentText: String = ""
 
     private var whisperKit: WhisperKit?
-    private var audioEngine: AVAudioEngine?
-    private var audioSamples: [Float] = []
-    private let targetSampleRate: Double = 16000
+    private var streamTranscriber: AudioStreamTranscriber?
     private var silencePlayer: AVAudioPlayer?
     private var pollTimer: Timer?
 
@@ -20,23 +21,30 @@ class DictationService: ObservableObject {
     // MARK: - Model Management
 
     func downloadModel() async {
-        // Use App Group container so model survives app reinstalls
         guard let modelDir = AppGroup.modelDirectoryURL else {
             modelStatus = "Error: no App Group container"
             return
         }
 
-        // Check if model already exists locally
-        let localModelPath = modelDir.appendingPathComponent(Self.modelVariant).path
-        let modelExists = FileManager.default.fileExists(atPath: localModelPath)
+        do {
+            try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
+        } catch {
+            modelStatus = "Error: \(error.localizedDescription)"
+            return
+        }
 
-        if modelExists {
+        // Check if model already downloaded in App Group
+        let expectedPath = modelDir.appendingPathComponent("huggingface/models/argmaxinc/whisperkit-coreml")
+        let modelGlob = try? FileManager.default.contentsOfDirectory(at: expectedPath, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.contains(Self.modelVariant) }
+
+        if let modelFolder = modelGlob?.first, FileManager.default.fileExists(atPath: modelFolder.path) {
             modelStatus = "Loading..."
             do {
                 whisperKit = try await WhisperKit(
                     WhisperKitConfig(
                         model: Self.modelVariant,
-                        modelFolder: localModelPath,
+                        modelFolder: modelFolder.path,
                         verbose: false,
                         prewarm: true,
                         load: true,
@@ -51,13 +59,12 @@ class DictationService: ObservableObject {
             }
         }
 
-        // Download model to App Group container
+        // Download directly into App Group container
         modelStatus = "Downloading..."
         do {
-            try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
-
             let folderURL = try await WhisperKit.download(
                 variant: Self.modelVariant,
+                downloadBase: modelDir,
                 from: "argmaxinc/whisperkit-coreml",
                 progressCallback: { progress in
                     Task { @MainActor in
@@ -66,17 +73,10 @@ class DictationService: ObservableObject {
                 }
             )
 
-            // Copy downloaded model to App Group container
-            let destPath = modelDir.appendingPathComponent(Self.modelVariant)
-            if FileManager.default.fileExists(atPath: destPath.path) {
-                try FileManager.default.removeItem(at: destPath)
-            }
-            try FileManager.default.copyItem(at: folderURL, to: destPath)
-
             whisperKit = try await WhisperKit(
                 WhisperKitConfig(
                     model: Self.modelVariant,
-                    modelFolder: destPath.path,
+                    modelFolder: folderURL.path,
                     verbose: false,
                     prewarm: true,
                     load: true,
@@ -138,113 +138,114 @@ class DictationService: ObservableObject {
     // MARK: - Recording
 
     func startRecording() {
-        guard isModelReady else { return }
+        guard isModelReady, let wk = whisperKit else { return }
 
-        audioSamples = []
+        // Reset streaming state
+        confirmedText = ""
+        unconfirmedText = ""
+        currentText = ""
         status = .recording
         writeStatus(.recording)
 
-        do {
-            // Audio session is already active (set up at launch via setupBackgroundAudio).
-            // We only need to wire up the engine and tap here.
-            audioEngine = AVAudioEngine()
-            guard let audioEngine else { return }
+        // Stop silence player -- AudioStreamTranscriber's AudioProcessor manages the
+        // audio session tap itself, and a concurrent player can conflict.
+        silencePlayer?.stop()
 
-            let inputNode = audioEngine.inputNode
-            let hwFormat = inputNode.outputFormat(forBus: 0)
+        let options = DecodingOptions(
+            task: .transcribe,
+            language: "fr",
+            temperature: 0.0,
+            usePrefillPrompt: true,
+            skipSpecialTokens: true,
+            withoutTimestamps: false,
+            noSpeechThreshold: 0.6
+        )
 
-            inputNode.installTap(onBus: 0, bufferSize: 4096, format: hwFormat) { [weak self] buffer, _ in
-                self?.processAudioBuffer(buffer, from: hwFormat)
+        // Capture weak self for the callback, which is called from the actor's context
+        let transcriber = AudioStreamTranscriber(
+            audioEncoder: wk.audioEncoder,
+            featureExtractor: wk.featureExtractor,
+            segmentSeeker: wk.segmentSeeker,
+            textDecoder: wk.textDecoder,
+            tokenizer: wk.tokenizer!,
+            audioProcessor: wk.audioProcessor,
+            decodingOptions: options,
+            stateChangeCallback: { [weak self] _, newState in
+                // Filter out Whisper artifacts: [silence], (bruit de porte), *music*, etc.
+                func clean(_ text: String) -> String {
+                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if trimmed.isEmpty { return "" }
+                    // Remove bracketed/parenthesized annotations and asterisk annotations
+                    let pattern = #"\[.*?\]|\(.*?\)|\*.*?\*"#
+                    let cleaned = trimmed.replacingOccurrences(of: pattern, with: "", options: .regularExpression)
+                    // Remove lines with common Whisper artifacts
+                    let lower = cleaned.lowercased()
+                    if lower.contains("waiting") || lower.contains("silence") || lower.contains("musique") || lower.contains("music") {
+                        return ""
+                    }
+                    return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+
+                let confirmed = newState.confirmedSegments.map { clean($0.text) }.filter { !$0.isEmpty }.joined(separator: " ")
+                let unconfirmed = newState.unconfirmedSegments.map { clean($0.text) }.filter { !$0.isEmpty }.joined(separator: " ")
+                let current = clean(newState.currentText)
+
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.confirmedText = confirmed
+                    self.unconfirmedText = unconfirmed
+                    self.currentText = current
+
+                    let partial = [confirmed, unconfirmed, current]
+                        .filter { !$0.isEmpty }
+                        .joined(separator: " ")
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !partial.isEmpty {
+                        AppGroup.defaults.set(partial, forKey: SharedKeys.partialTranscription)
+                    }
+                }
             }
+        )
 
-            try audioEngine.start()
-        } catch {
-            status = .error
-            writeStatus(.error)
+        streamTranscriber = transcriber
+
+        Task {
+            do {
+                try await transcriber.startStreamTranscription()
+            } catch {
+                await MainActor.run {
+                    self.status = .error
+                    self.writeStatus(.error)
+                }
+            }
         }
     }
 
     func stopRecording() {
-        audioEngine?.inputNode.removeTap(onBus: 0)
-        audioEngine?.stop()
-        audioEngine = nil
+        // Capture text snapshot before clearing state
+        let finalText = [confirmedText, unconfirmedText, currentText]
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        Task { await transcribe() }
-    }
-
-    // MARK: - Transcription
-
-    private func transcribe() async {
-        guard let whisperKit, !audioSamples.isEmpty else {
-            status = .idle
-            writeStatus(.idle)
-            return
+        // Stop the actor (must be called from an async context)
+        let transcriber = streamTranscriber
+        streamTranscriber = nil
+        Task {
+            await transcriber?.stopStreamTranscription()
         }
 
-        status = .transcribing
-        writeStatus(.transcribing)
+        // Publish transcription result and signal keyboard extension
+        AppGroup.defaults.set(finalText, forKey: SharedKeys.lastTranscription)
+        AppGroup.defaults.set(Date().timeIntervalSince1970, forKey: SharedKeys.lastTranscriptionTimestamp)
+        AppGroup.defaults.removeObject(forKey: SharedKeys.partialTranscription)
 
-        do {
-            let options = DecodingOptions(
-                task: .transcribe,
-                temperature: 0.0,
-                usePrefillPrompt: true,
-                skipSpecialTokens: true,
-                withoutTimestamps: true,
-                noSpeechThreshold: 0.6
-            )
+        status = .ready
+        writeStatus(.ready)
+        DarwinNotificationCenter.post(DarwinNotificationName.transcriptionReady)
 
-            let results = try await whisperKit.transcribe(
-                audioArray: audioSamples,
-                decodeOptions: options
-            )
-
-            let text = results.map { $0.text }
-                .joined(separator: " ")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-
-            AppGroup.defaults.set(text, forKey: SharedKeys.lastTranscription)
-            AppGroup.defaults.set(Date().timeIntervalSince1970, forKey: SharedKeys.lastTranscriptionTimestamp)
-
-            status = .ready
-            writeStatus(.ready)
-            DarwinNotificationCenter.post(DarwinNotificationName.transcriptionReady)
-        } catch {
-            status = .error
-            writeStatus(.error)
-        }
-    }
-
-    // MARK: - Audio Processing
-
-    private func processAudioBuffer(_ buffer: AVAudioPCMBuffer, from sourceFormat: AVAudioFormat) {
-        guard let targetFormat = AVAudioFormat(
-            commonFormat: .pcmFormatFloat32,
-            sampleRate: targetSampleRate,
-            channels: 1,
-            interleaved: false
-        ) else { return }
-
-        guard let converter = AVAudioConverter(from: sourceFormat, to: targetFormat) else { return }
-
-        let ratio = targetSampleRate / sourceFormat.sampleRate
-        let outputFrameCount = AVAudioFrameCount(Double(buffer.frameLength) * ratio) + 1
-        guard let outputBuffer = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: outputFrameCount) else { return }
-
-        var error: NSError?
-        converter.convert(to: outputBuffer, error: &error) { _, outStatus in
-            outStatus.pointee = .haveData
-            return buffer
-        }
-
-        guard error == nil, let channelData = outputBuffer.floatChannelData else { return }
-        let samples = Array(UnsafeBufferPointer(start: channelData[0], count: Int(outputBuffer.frameLength)))
-        audioSamples.append(contentsOf: samples)
-
-        // Write waveform energy for keyboard extension UI
-        let energy = samples.reduce(0) { $0 + abs($1) } / Float(samples.count)
-        AppGroup.defaults.set(energy, forKey: SharedKeys.waveformEnergy)
-        DarwinNotificationCenter.post(DarwinNotificationName.waveformUpdate)
+        // Restart silence player to keep the process alive in background
+        silencePlayer?.play()
     }
 
     // MARK: - IPC

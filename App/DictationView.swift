@@ -23,8 +23,11 @@ struct DictationView: View {
                     .foregroundStyle(.orange)
             }
 
-            if let text = AppGroup.defaults.string(forKey: SharedKeys.lastTranscription), !text.isEmpty,
-               dictation.status == .ready {
+            if dictation.status == .recording {
+                // Show streaming text in real-time as speech is recognized
+                streamingTextView
+            } else if let text = AppGroup.defaults.string(forKey: SharedKeys.lastTranscription), !text.isEmpty,
+                      dictation.status == .ready {
                 Text(text)
                     .font(.body)
                     .padding()
@@ -64,10 +67,11 @@ struct DictationView: View {
         }
         .onAppear {
             guard !hasStarted else { return }
-            hasStarted = true
             if dictation.isModelReady {
+                hasStarted = true
                 dictation.startRecording()
             }
+            // If model not ready yet, onChange will catch it
         }
         .onChange(of: dictation.isModelReady) { _, ready in
             if ready && !hasStarted {
@@ -81,6 +85,32 @@ struct DictationView: View {
                     isPresented = false
                 }
             }
+        }
+    }
+
+    // Streaming text view shown while recording; layers confirmed / unconfirmed / current
+    // with decreasing emphasis so the user can see what's locked in vs still in flux.
+    @ViewBuilder
+    private var streamingTextView: some View {
+        let hasAny = !dictation.confirmedText.isEmpty
+            || !dictation.unconfirmedText.isEmpty
+            || !dictation.currentText.isEmpty
+
+        if hasAny {
+            Group {
+                (
+                    Text(dictation.confirmedText).foregroundStyle(.primary)
+                    + Text(dictation.confirmedText.isEmpty || dictation.unconfirmedText.isEmpty ? "" : " ")
+                    + Text(dictation.unconfirmedText).foregroundStyle(.secondary)
+                    + Text(dictation.unconfirmedText.isEmpty || dictation.currentText.isEmpty ? "" : " ")
+                    + Text(dictation.currentText).foregroundStyle(.tertiary)
+                )
+                .font(.body)
+            }
+            .padding()
+            .background(Color(.secondarySystemBackground))
+            .cornerRadius(12)
+            .padding(.horizontal)
         }
     }
 

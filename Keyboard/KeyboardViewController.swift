@@ -103,7 +103,13 @@ class KeyboardViewController: KeyboardInputViewController {
                 switch rawStatus {
                 case "recording":
                     self?.dictationState.isRecording = true
-                    self?.dictationState.statusText = "Listening..."
+                    // Show partial transcription preview if available, otherwise "Listening..."
+                    // Note: partial text is displayed only as a status preview, never inserted
+                    if let partial = defaults.string(forKey: SharedKeys.partialTranscription), !partial.isEmpty {
+                        self?.dictationState.statusText = partial
+                    } else {
+                        self?.dictationState.statusText = "Listening..."
+                    }
                 case "transcribing":
                     self?.dictationState.isRecording = false
                     self?.dictationState.statusText = "Transcribing..."

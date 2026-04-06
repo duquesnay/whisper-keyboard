@@ -10,6 +10,7 @@ public enum SharedKeys {
     public static let stopRequested = "wk.stopRequested"
     public static let startRequested = "wk.startRequested"
     public static let language = "wk.language"
+    public static let partialTranscription = "wk.partialTranscription"
 }
 
 public enum DictationStatus: String {
