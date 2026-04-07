@@ -256,6 +256,9 @@ class DictationService: ObservableObject {
     private func checkForKeyboardCommands() {
         let defaults = AppGroup.defaults
 
+        // Write heartbeat so keyboard extension knows the session is alive
+        defaults.set(Date().timeIntervalSince1970, forKey: SharedKeys.sessionHeartbeat)
+
         if defaults.bool(forKey: SharedKeys.startRequested) {
             defaults.set(false, forKey: SharedKeys.startRequested)
             notificationsReceived += 1

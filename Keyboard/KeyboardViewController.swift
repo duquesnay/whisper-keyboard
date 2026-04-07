@@ -83,16 +83,41 @@ class KeyboardViewController: KeyboardInputViewController {
 
     // MARK: - Mic action
 
+    /// Returns true if the container app has written a recent heartbeat,
+    /// meaning it is alive in the background and can receive commands via UserDefaults.
+    private var isSessionAlive: Bool {
+        let heartbeat = AppGroup.defaults.double(forKey: SharedKeys.sessionHeartbeat)
+        guard heartbeat > 0 else { return false }
+        // Consider session alive if heartbeat is within last 2 seconds
+        return Date().timeIntervalSince1970 - heartbeat < 2.0
+    }
+
     private func micTapped() {
+        // Toggle: if already recording, send stop; otherwise start
+        if dictationState.isRecording {
+            // Stop via shared flag -- container app polls and acts
+            AppGroup.defaults.set(true, forKey: SharedKeys.stopRequested)
+            dictationState.isRecording = false
+            dictationState.statusText = "Transcribing..."
+            return
+        }
+
         // Clear previous result
         AppGroup.defaults.removeObject(forKey: SharedKeys.lastTranscription)
         AppGroup.defaults.removeObject(forKey: SharedKeys.lastTranscriptionTimestamp)
+        AppGroup.defaults.removeObject(forKey: SharedKeys.partialTranscription)
 
-        dictationState.isRecording = true
-        dictationState.statusText = "Opening app..."
-
-        // Open container app via deep link
-        openContainerApp()
+        if isSessionAlive {
+            // Session is active in background -- no app switching needed
+            AppGroup.defaults.set(true, forKey: SharedKeys.startRequested)
+            dictationState.isRecording = true
+            dictationState.statusText = "Listening..."
+        } else {
+            // Cold start: open container app via deep link to activate session
+            dictationState.isRecording = true
+            dictationState.statusText = "Opening app..."
+            openContainerApp()
+        }
     }
 
     private func openContainerApp() {
