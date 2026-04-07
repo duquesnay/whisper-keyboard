@@ -26,17 +26,51 @@ class DictationService: ObservableObject {
             return
         }
 
-        // WhisperKit handles download + caching when given downloadBase.
-        // If model already exists at that path, it loads from cache without re-downloading.
-        modelStatus = "Loading..."
+        // Compute the expected model folder path inside the App Group.
+        // HubApi stores models at: downloadBase/models/argmaxinc/whisperkit-coreml/<variant>
+        let expectedModelFolder = modelDir
+            .appendingPathComponent("models")
+            .appendingPathComponent("argmaxinc")
+            .appendingPathComponent("whisperkit-coreml")
+            .appendingPathComponent(Self.modelVariant)
+
         do {
             try FileManager.default.createDirectory(at: modelDir, withIntermediateDirectories: true)
+        } catch {
+            modelStatus = "Dir err: \(error.localizedDescription)"
+            return
+        }
 
+        // If model already downloaded to App Group, load directly from disk (no network)
+        if FileManager.default.fileExists(atPath: expectedModelFolder.path) {
+            modelStatus = "Loading..."
+            do {
+                whisperKit = try await WhisperKit(
+                    WhisperKitConfig(
+                        model: Self.modelVariant,
+                        modelFolder: expectedModelFolder.path,
+                        verbose: false,
+                        prewarm: true,
+                        load: true,
+                        download: false
+                    )
+                )
+                modelStatus = "Ready"
+                isModelReady = true
+                return
+            } catch {
+                // Cache corrupted, fall through to re-download
+            }
+        }
+
+        // First-time download into App Group via downloadBase
+        modelStatus = "Downloading..."
+        do {
             whisperKit = try await WhisperKit(
                 WhisperKitConfig(
                     model: Self.modelVariant,
                     downloadBase: modelDir,
-                    verbose: true,
+                    verbose: false,
                     prewarm: true,
                     load: true
                 )
