@@ -77,12 +77,9 @@ struct ContentView: View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-            Text("Loading model...")
+            Text(dictation.modelStatus)
                 .font(.title3)
                 .foregroundStyle(.secondary)
-            Text(dictation.modelStatus)
-                .font(.caption)
-                .foregroundStyle(.orange)
         }
     }
 

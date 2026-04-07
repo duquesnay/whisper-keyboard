@@ -145,9 +145,9 @@ class DictationService: ObservableObject {
 
         let options = DecodingOptions(
             task: .transcribe,
-            language: "fr",
             temperature: 0.0,
             usePrefillPrompt: true,
+            detectLanguage: true,
             skipSpecialTokens: true,
             withoutTimestamps: false,
             noSpeechThreshold: 0.6
