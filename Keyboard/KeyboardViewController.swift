@@ -30,11 +30,21 @@ class KeyboardViewController: KeyboardInputViewController {
                 collapsedView: { $0.view },
                 emojiKeyboard: { $0.view },
                 toolbar: { _ in
-                    HStack(spacing: 12) {
-                        Text(self?.dictationState.statusText ?? "")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(spacing: 10) {
+                        // Status: show tail of partial text or status message
+                        HStack(spacing: 6) {
+                            if self?.dictationState.isRecording == true {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 6, height: 6)
+                            }
+                            Text(self?.toolbarDisplayText ?? "Tap mic to dictate")
+                                .font(.caption)
+                                .foregroundStyle(self?.dictationState.isRecording == true ? .primary : .secondary)
+                                .lineLimit(1)
+                                .truncationMode(.head)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button {
                             self?.micTapped()
@@ -52,6 +62,23 @@ class KeyboardViewController: KeyboardInputViewController {
         }
 
         startPolling()
+    }
+
+    /// Truncated display text for the toolbar: shows the last ~50 characters
+    /// of the partial transcription with a leading ellipsis, so the user sees
+    /// the most recent words rather than a truncated beginning.
+    private var toolbarDisplayText: String {
+        let raw = dictationState.statusText
+        if !dictationState.isRecording { return raw }
+        // During recording, show tail of partial transcription
+        let maxLength = 50
+        if raw.count <= maxLength { return raw }
+        let tail = String(raw.suffix(maxLength))
+        // Find the first word boundary to avoid cutting mid-word
+        if let spaceIndex = tail.firstIndex(of: " ") {
+            return "..." + String(tail[tail.index(after: spaceIndex)...])
+        }
+        return "..." + tail
     }
 
     // MARK: - Mic action
@@ -142,9 +169,13 @@ class KeyboardViewController: KeyboardInputViewController {
         // New transcription available
         lastSeenDate = timestamp
         DispatchQueue.main.async { [weak self] in
-            self?.textDocumentProxy.insertText(text)
             self?.dictationState.isRecording = false
-            self?.dictationState.statusText = "Tap mic to dictate"
+            self?.dictationState.statusText = "Inserting..."
+            self?.textDocumentProxy.insertText(text)
+            // Brief delay so user sees confirmation before reset
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self?.dictationState.statusText = "Tap mic to dictate"
+            }
         }
 
         // Clean up

@@ -3,17 +3,18 @@ import SwiftUI
 @main
 struct WhisperKeyboardApp: App {
     @StateObject private var dictation = DictationService()
-    @State private var showDictation = false
 
     var body: some Scene {
         WindowGroup {
             ContentView(dictation: dictation)
-                .fullScreenCover(isPresented: $showDictation) {
-                    DictationView(dictation: dictation, isPresented: $showDictation)
-                }
                 .onOpenURL { url in
                     guard url.scheme == "whisperkey", url.host == "dictate" else { return }
-                    showDictation = true
+                    // URL launch from keyboard extension → start recording immediately
+                    if dictation.isModelReady {
+                        dictation.startRecording()
+                    }
+                    // If model not ready yet, the user will see the loading state
+                    // and can tap the mic button once it's ready.
                 }
                 .task {
                     // Setup audio session at app launch, before any UI

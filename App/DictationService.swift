@@ -211,6 +211,13 @@ class DictationService: ObservableObject {
         silencePlayer?.play()
     }
 
+    /// Reset to idle state after dictation is complete.
+    /// Called by the UI to transition away from the "done" screen.
+    func resetToIdle() {
+        status = .idle
+        writeStatus(.idle)
+    }
+
     // MARK: - IPC
 
     private func writeStatus(_ dictationStatus: DictationStatus) {
